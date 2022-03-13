@@ -1,0 +1,16 @@
+{
+  "name": "integrations",
+  "version": "1.0.0",
+  "description": "coinjoins.io integrations",
+  "main": "index.js",
+  "scripts": {},
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.26.0",
+    "pkg": "^5.5.2"
+  },
+  "devDependencies": {
+    "typescript": "^4.6.2"
+  }
+}

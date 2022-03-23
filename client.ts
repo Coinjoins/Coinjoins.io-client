@@ -1,18 +1,21 @@
 
-// find electrum path
-// check if running as a maker or taker
-// get unlist of unspent uxtos
 
-//if taker run 1 cycle with last 5 unspent txos, and 5+1 addresses
-
-
+import os from 'os';
+import * as readline from 'readline';
 import { execSync } from 'child_process'
 import axios from 'axios'
+import { runCommand } from './src/run_command'
 
-const defaultElectronPath = "/System/Volumes/Data/Applications/Electrum.app/Contents/MacOS"
-const path = "";
-const walletPath = "";
-const execCommand = path + " -w " + walletPath + " ";
+
+const rl = readline.createInterface({
+    input: process.stdin, //or fileStream 
+    output: process.stdout
+});
+
+const defaultElectronPath = "/System/Volumes/Data/Applications/Electrum.app/Contents/MacOS/run_electrum"
+const defaultWalletPath = os.homedir() + '/.electrum/wallets/default_wallet'
+let execCommand = "";
+let walletPass = "";
 const isMaker = false;
 const host = "https://api.coinjoins.io/transaction"
 
@@ -72,15 +75,51 @@ interface coinJoin {
 }
 
 
-
 function delay(ms: number) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-const getLatestUTXOset = (count: number) => {
+const question = (text: string): Promise<string> => {
+    return new Promise((resolve, reject) => {
+
+        rl.question(text, resolve)
+
+    })
+}
 
 
-    const utxos: Array<unspentUTXO> = JSON.parse(execSync(execCommand + command_list.listunspent).toString());
+const setConfiguration = async () => {
+
+
+
+    let electronPath: string = await question(`Enter electron path ( press enter for default : ${defaultElectronPath})`);
+
+    if (electronPath === "") {
+        electronPath = defaultElectronPath;
+    }
+    let walletPath: string = await question(`Enter electron bitcoin wallet path (press enter for default: ${defaultWalletPath})`);
+
+    if (walletPath === "") {
+        walletPath = defaultWalletPath;
+    }
+
+
+    walletPass = await question(`Enter electrum wallet password`);
+
+
+    execCommand = electronPath + " --offline" + " -w " + walletPath + " ";
+    console.log(execCommand);
+}
+
+const startElectrumDaemon = () => {
+    execSync(execCommand + " daemon -d")
+}
+
+const getLatestUTXOset = async (count: number) => {
+
+
+    const utxos: Array<unspentUTXO> = JSON.parse(await runCommand(execCommand + command_list.listunspent, walletPass));
+
 
     return utxos.sort((a, b) => {
         return a.height - b.height
@@ -100,7 +139,7 @@ const getReceiveAddresses = (count: number) => {
 
 const createCoinjoin = async () => {
 
-    const recent5Utxos = getLatestUTXOset(5).map((utxo) => {
+    const recent5Utxos = (await getLatestUTXOset(5)).map((utxo) => {
         return {
             blockchain_transaction_index: utxo.prevout_n,
             blockchain_transaction_id: utxo.prevout_hash
@@ -183,6 +222,10 @@ const mainLoop = async () => {
         try {
             console.log("privatizing bitcoin with coinjoins.io ...")
 
+            await setConfiguration();
+            startElectrumDaemon()
+
+            console.log("creating a coinjoin");
             const coinJoin: coinJoin = await createCoinjoin()
 
             const id = coinJoin.request_id;
@@ -194,7 +237,7 @@ const mainLoop = async () => {
             await statusLoop(id)
 
         } catch (e) {
-
+            console.log(e);
             if (!isMaker) {
                 process.exit(1)
             }

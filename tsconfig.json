@@ -7,18 +7,10 @@
         "esModuleInterop": true,
         "moduleResolution": "node",
         "resolveJsonModule": true,
-        "experimentalDecorators": true,
-        "emitDecoratorMetadata": true,
         "outDir": "dist",
         "sourceMap": true,
-        "types": [
-            "reflect-metadata",
-            "swagger-express-ts",
-            "jest"
-        ],
     },
     "exclude": [
         "node_modules",
-        "tests"
     ]
 }

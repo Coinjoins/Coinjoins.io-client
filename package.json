@@ -2,8 +2,10 @@
   "name": "integrations",
   "version": "1.0.0",
   "description": "coinjoins.io integrations",
-  "main": "index.js",
-  "scripts": {},
+  "scripts": {
+    "start-mac": "./client-macos",
+    "build": "rm -rf dist && tsc && pkg   --out-path ./executables dist/client.js "
+  },
   "author": "",
   "license": "ISC",
   "dependencies": {
@@ -11,6 +13,7 @@
     "pkg": "^5.5.2"
   },
   "devDependencies": {
+    "@types/node": "^17.0.21",
     "typescript": "^4.6.2"
   }
 }

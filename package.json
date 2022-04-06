@@ -4,12 +4,14 @@
   "description": "coinjoins.io integrations",
   "scripts": {
     "start-mac": "./client-macos",
-    "build": "rm -rf dist && tsc && pkg   --out-path ./executables dist/client.js "
+    "build": "rm -rf dist && rm -rf executables && tsc  && pkg   --out-path ./executables dist/main.js "
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@types/commander": "^2.12.2",
     "axios": "^0.26.0",
+    "commander": "^9.1.0",
     "pkg": "^5.5.2"
   },
   "devDependencies": {

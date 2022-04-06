@@ -1,0 +1,6 @@
+{
+    "host": "https://api.coinjoins.io",
+    "default_wallet_path": "${home_dir}/.electrum/wallets/default_wallet",
+    "default_electrum_path_macos": "/System/Volumes/Data/Applications/Electrum.app/Contents/MacOS/run_electrum",
+    "run_as_maker": false
+}

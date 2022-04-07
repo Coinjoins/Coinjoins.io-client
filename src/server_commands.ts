@@ -1,4 +1,4 @@
-import { address, unspentUTXO, coinJoin } from "./model";
+import { address, unspentUTXO, coinJoin, apiUTXO } from "./model";
 import axios from 'axios'
 
 const paths = {
@@ -8,7 +8,7 @@ const paths = {
 
 }
 
-export const createTransaction = async (host: string, newAddrs: address[], recentUtxos: unspentUTXO[], isMaker: boolean): Promise<coinJoin> => {
+export const createCoinJoinRequest = async (host: string, newAddrs: address[], recentUtxos: apiUTXO[], isMaker: boolean): Promise<coinJoin> => {
 
 
     const postData = {

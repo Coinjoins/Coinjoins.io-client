@@ -3,10 +3,11 @@
 
 import { isElectrumRunning } from "./setup"
 import { checkCliArgs, createElectrumCommand } from "./setup"
-import { getLatestUTXOset, getReceiveAddresses } from './electrum_commands'
-import { createTransaction, getCoinjoinSstatus } from "./server_commands";
+import { getLatestUTXOset, getReceiveAddresses, signTransaction } from './electrum_commands'
+import { createCoinJoinRequest, getCoinjoinSstatus, signCoinjoin } from "./server_commands";
 import { coinJoin, cjStatus } from "./model";
-import { Option } from "commander";
+
+
 
 const maxUTXOsSize = 5;
 
@@ -85,7 +86,7 @@ const mainLoop = async () => {
 
     try {
 
-
+        console.info("starting coinjoin client. ")
         const isRunning = await isElectrumRunning()
 
         if (!isRunning) {
@@ -109,24 +110,39 @@ const mainLoop = async () => {
 
         do {
 
-
+            console.info("retrieving utxo set from wallet ")
             const utxos = await getLatestUTXOset(baseCmd, maxUTXOsSize);
-            const addrs = getReceiveAddresses(baseCmd, maxUTXOsSize)
-            const cj = await createTransaction(options.host, addrs, utxos, options.run_as_maker)
 
 
+            console.info("retrieving unused addresses from wallet")
+            const addrs = await getReceiveAddresses(baseCmd, maxUTXOsSize)
+
+            console.info("sending coinjoin request to server")
+            const cj = await createCoinJoinRequest(options.host, addrs, utxos, options.run_as_maker)
+
+
+            let status: cjStatus = null;
 
             for (; ;) {
 
-                await delay(300);
+                await delay(1000);
 
-                const status = await checkSignable(cj, options.host);
+                console.info("asking server if the coinjoin is ready to be signed ...")
+                status = await checkSignable(cj, options.host);
 
                 if (status.signable) {
                     break;
                 }
 
+                console.info("the coinjoin  is not ready to be signed")
+
             }
+
+
+            const signedTx = await signTransaction(baseCmd, status.coinjoin.transaction.hex)
+            await signCoinjoin(options.host, status.coinjoin.request_id, signedTx)
+
+
 
             for (; ;) {
                 await delay(300);

@@ -8,6 +8,12 @@ export interface unspentUTXO {
     value: string,
 }
 
+export interface apiUTXO {
+
+    blockchain_transaction_index: number,
+    blockchain_transaction_id: string
+}
+
 export interface cjStatus {
     signable: boolean,
     broadcasted: boolean,
